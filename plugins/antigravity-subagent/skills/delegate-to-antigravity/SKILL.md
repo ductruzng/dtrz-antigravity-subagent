@@ -14,8 +14,9 @@ Treat Antigravity as an external delegated worker. It is not a native Codex coll
 3. Establish availability with `agy_check` or `node <skill-dir>/scripts/agy-delegate.mjs --check`.
 4. Make the task concrete and bounded. Include the goal, constraints, expected output, and relevant absolute paths.
 5. Default to `mode: plan`. Use `accept-edits` only when the user requested implementation and authorized changes to that workspace.
-6. Inspect Antigravity's response and the workspace diff. Run relevant tests independently when it made changes.
-7. Report its contribution as delegated analysis, not independently verified fact.
+6. If the user specifies a model or performance profile, use the `agy_models` tool to list available models, then pass the chosen ID to the `model` parameter. You may also specify `--effort low|medium|high` if reasoning depth is a concern.
+7. Inspect Antigravity's response and the workspace diff. Run relevant tests independently when it made changes.
+8. Report its contribution as delegated analysis, not independently verified fact.
 
 ## Bundled runner
 
@@ -25,7 +26,7 @@ For the Skills-only path, write the complete prompt to a temporary UTF-8 file an
 node <skill-dir>/scripts/agy-delegate.mjs --cwd <absolute-workspace> --mode plan --prompt-file <absolute-prompt-file>
 ```
 
-Delete the temporary prompt file after the runner finishes. The runner accepts `--output-format text|json`, `--timeout-seconds 1..1800`, `--agent`, and `--model`. Do not add or emulate dangerous permission-bypass flags.
+Delete the temporary prompt file after the runner finishes. The runner accepts `--output-format text|json`, `--timeout-seconds 1..1800`, `--agent`, `--model`, and `--effort`. Do not add or emulate dangerous permission-bypass flags.
 
 If neither the MCP tools nor local process execution is available, explain that this plugin requires a local Codex environment with Node.js and an authenticated `agy` installation.
 

@@ -14,12 +14,16 @@ const client = new Client({ name: 'agy-mcp-smoke-test', version: '1.0.0' });
 try {
   await client.connect(transport);
   const tools = await client.listTools();
-  assert.deepEqual(tools.tools.map((tool) => tool.name).sort(), ['agy_check', 'agy_delegate']);
+  assert.deepEqual(tools.tools.map((tool) => tool.name).sort(), ['agy_check', 'agy_delegate', 'agy_models']);
 
   if (!protocolOnly) {
     const check = await client.callTool({ name: 'agy_check', arguments: {} });
     assert.notEqual(check.isError, true);
     assert.match(check.content[0].text, /Antigravity CLI is available at:/);
+
+    const models = await client.callTool({ name: 'agy_models', arguments: {} });
+    assert.notEqual(models.isError, true);
+    assert.ok(models.content[0].text.length > 0);
 
     const delegated = await client.callTool({
       name: 'agy_delegate',

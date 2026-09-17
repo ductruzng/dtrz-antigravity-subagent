@@ -127,6 +127,48 @@ function createServer(): McpServer {
   );
 
   server.registerTool(
+    'agy_models',
+    {
+      title: 'List Antigravity Models',
+      description: 'List all available models that can be used with the agy_delegate model parameter.',
+      inputSchema: z.object({}),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+      },
+    },
+    async () => {
+      const executable = await findAgy();
+      if (!executable) {
+        return {
+          content: [{ type: 'text', text: 'Antigravity CLI was not found.' }],
+          isError: true,
+        };
+      }
+
+      try {
+        const result = await runAgy(executable, ['models'], process.cwd(), 15000);
+        if (result.exitCode !== 0) {
+          return {
+            content: [{ type: 'text', text: `Failed to list models:\n${result.stderr}` }],
+            isError: true,
+          };
+        }
+        return {
+          content: [{ type: 'text', text: result.stdout.trim() }],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Error running agy models: ${error instanceof Error ? error.message : String(error)}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  server.registerTool(
     'agy_delegate',
     {
       title: 'Delegate to Antigravity',
@@ -137,8 +179,9 @@ function createServer(): McpServer {
         mode: z.enum(['plan', 'default', 'accept-edits']).default('plan'),
         outputFormat: z.enum(['text', 'json']).default('text'),
         timeoutSeconds: z.number().int().min(1).max(1800).default(900),
-        agent: z.string().min(1).max(200).optional(),
-        model: z.string().min(1).max(200).optional(),
+        agent: z.string().min(1).max(200).optional().describe('Agent for the current CLI session'),
+        model: z.string().min(1).max(200).optional().describe('Model ID to use (e.g., gemini-3.8-flash-high). Run agy_models to see available models.'),
+        effort: z.enum(['low', 'medium', 'high']).optional().describe('Reasoning effort for the current CLI session'),
       }),
       annotations: {
         readOnlyHint: false,
@@ -147,7 +190,7 @@ function createServer(): McpServer {
         idempotentHint: false,
       },
     },
-    async ({ prompt, cwd, mode, outputFormat, timeoutSeconds, agent, model }) => {
+    async ({ prompt, cwd, mode, outputFormat, timeoutSeconds, agent, model, effort }) => {
       const executable = await findAgy();
       if (!executable) {
         return {
@@ -169,6 +212,7 @@ function createServer(): McpServer {
       const args = ['--print', prompt, '--output-format', outputFormat, '--mode', mode];
       if (agent) args.push('--agent', agent);
       if (model) args.push('--model', model);
+      if (effort) args.push('--effort', effort);
 
       try {
         const result = await runAgy(executable, args, resolvedCwd, timeoutSeconds * 1000);

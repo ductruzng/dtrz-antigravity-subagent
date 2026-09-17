@@ -103,7 +103,7 @@ function run(executable, args, cwd, timeoutMs) {
 
 const options = parseArgs(process.argv.slice(2));
 if (options.help) {
-  process.stdout.write("Usage: agy-delegate.mjs --check | --cwd PATH --prompt-file PATH [--mode plan|default|accept-edits] [--output-format text|json] [--timeout-seconds N] [--agent NAME] [--model NAME]\n");
+  process.stdout.write("Usage: agy-delegate.mjs --check | --cwd PATH --prompt-file PATH [--mode plan|default|accept-edits] [--output-format text|json] [--timeout-seconds N] [--agent NAME] [--model NAME] [--effort low|medium|high]\n");
   process.exit(0);
 }
 
@@ -146,6 +146,7 @@ if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1 || timeoutSeconds > 
 const agyArgs = ["--print", prompt, "--output-format", outputFormat, "--mode", mode];
 if (options.agent) agyArgs.push("--agent", options.agent);
 if (options.model) agyArgs.push("--model", options.model);
+if (options.effort) agyArgs.push("--effort", options.effort);
 
 const result = await run(executable, agyArgs, workspace, timeoutSeconds * 1000);
 if (result.stdout) process.stdout.write(result.stdout);
